@@ -1,12 +1,15 @@
 const expect = require('expect');
 const request = require('supertest');
+const {ObjectID} =require('mongodb');
 
 var {app} = require('./../server');
 var {Todo} = require('./../models/todo');
 
 const todos = [
-    {text:'first test todo'},
-    {text:'second test todo'}
+    {   _id: new ObjectID(),
+        text:'first test todo'},
+    {   _id: new ObjectID(),
+        text:'second test todo'}
 ];
 
 beforeEach((done)=>{
@@ -70,3 +73,30 @@ describe('GET /todos route', ()=>{
         .end(done);
     });
 });
+
+describe('GET todos/:id', ()=>{
+    it('should return todo doc',(done)=>{
+        request(app)
+        .get(`/todos/${todos[0]._id.toHexString()}`)
+        .expect(200)
+        .expect((res)=>{
+            expect(res.body.todo.text).toBe(todos[0].text);
+        })
+        .end(done);
+    })
+    //is an asynchronous test sou I have to specify done right here
+    it('Should return 404 if todo not found',(done)=>{
+        id = new ObjectID().toHexString;
+        request(app)
+        .get(`/todos/${id}`)
+        .expect(404)
+        .end(done);
+    })
+    it('should return 404 for non-object id is',(done)=>{
+        request(app)
+        .get(`/todos/123`)
+        .expect(404)
+        .end(done);
+    })
+});
+
