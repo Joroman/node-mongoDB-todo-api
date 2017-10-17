@@ -54,7 +54,8 @@ app.delete('/todos/:id',(req, res)=>{
     
         Todo.findByIdAndRemove(id).then((todo)=>{
            if(!todo) return res.status(404).send();
-            res.send(todo);
+           //res.send({todo:todo}) with ES6 javascript I can make {todo}
+            res.send({todo});
         }).catch((err)=>{
             res.status(404).send();
         });

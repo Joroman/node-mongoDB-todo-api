@@ -32,7 +32,7 @@ describe('POST / todos',()=>{
         })
         .end((err,res)=>{
             if(err){
-                return done(err);
+                return done(err);id
             }
             // calling wiht no arguments fetch all the todos
             Todo.find({text}).then((todos)=>{
@@ -100,3 +100,40 @@ describe('GET todos/:id', ()=>{
     })
 });
 
+describe('Delete /todos/:id', ()=>{
+    
+    it('should return 200 and the todo is remove',(done)=>{
+        var hexId = todos[1]._id.toHexString();
+        request(app)
+        .delete(`/todos/${hexId}`)
+        .expect(200)
+        .expect((res)=>{
+            expect(res.body.todo._id).toBe(hexId)
+        })
+        //asynchornous query the database
+        .end((err, res)=>{
+            if(err) return done(err);
+
+            Todo.findById(hexId).then((todo)=>{
+                expect(todo).toNotExist();
+                done();
+            }).catch((e)=>done(e));
+        });
+
+    });
+
+    it('should return 404 for invalid ObjectId',(done)=>{
+        request(app)
+        .delete(`/todos/${123}`)
+        .expect(404)
+        .end(done);
+    });
+    it('should return 404 the todo not found',(done)=>{
+        var id = new ObjectID().toHexString();
+        request(app)
+        .delete(`/todos/${id}`)
+        .expect(404)
+        .end(done);
+    });
+        
+});
