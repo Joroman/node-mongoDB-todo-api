@@ -9,7 +9,9 @@ const todos = [
     {   _id: new ObjectID(),
         text:'first test todo'},
     {   _id: new ObjectID(),
-        text:'second test todo'}
+        text:'second test todo',
+        completed:true,
+        completedAt:1234}
 ];
 
 beforeEach((done)=>{
@@ -136,4 +138,67 @@ describe('Delete /todos/:id', ()=>{
         .end(done);
     });
         
+});
+
+describe('Test the PATCH /todos/:id api',()=>{
+  
+    it('Should send 404 for invalid id',(done)=>{
+        var id = new ObjectID().toHexString();
+     
+        request(app)
+        .patch(`/todos/${id}`)
+        .expect(404)
+        .end(done);
+    });
+    it('Should return 404 for unable to find todo',(done)=>{
+        request(app)
+        .patch(`/todos/${123}`)
+        .expect(404)
+        .end(done);
+    });
+
+    it('should return 200 and the update todo',(done)=>{
+        var id = todos[0]._id.toHexString();
+        var text = "Tonto"
+        var completed = true;
+
+        request(app)
+        .patch(`/todos/${id}`)
+        .send({text,completed})
+        .expect(200)
+        .expect((res)=>{
+           expect(res.body.todo._id).toBe(id);
+           expect(res.body.todo.completed).toBe(true);
+           expect(res.body.todo.completedAt).toExist();
+           expect(res.body.todo.completedAt).toBeA('number');
+           expect(res.body.todo.text).toBe(text);
+        })
+        .end(done);
+    });
+
+    it('Should update todo, clear completedAt to null when is not completed and return 200',(done)=>{
+        var id = todos[1]._id.toHexString();
+
+        request(app)
+        .patch(`/todos/${id}`)
+        .send({
+                text:'Clear completedAt',
+                completed:false})
+        .expect(200)
+        .expect((res)=>{
+            expect(res.body.todo.text).toBe('Clear completedAt');
+            expect(res.body.todo.completed).toBeFalsy();
+            expect(res.body.todo.completedAt).toNotExist();
+           
+        })
+        .end((err, res)=>{
+            if(err) return done(err);
+
+            Todo.findById(id).then((todo)=>{
+                expect(todo._id.toHexString()).toBe(id);
+                expect(todo.text).toBe('Clear completedAt');
+                done();
+            }).catch((e)=>done(e));
+        });
+    })
 });
