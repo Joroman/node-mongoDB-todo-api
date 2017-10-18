@@ -1,3 +1,6 @@
+//configuration server env variables file
+require('./config/config');
+
 //external libraries
 const _ = require('lodash');
 const {ObjectID} = require('mongodb');
