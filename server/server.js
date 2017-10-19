@@ -87,6 +87,41 @@ app.patch('/todos/:id',(req, res)=>{
     }).catch((e)=>res.status(400).send());
 });
 
+//users
+app.post('/users',(req, res)=>{
+    var body = _.pick(req.body,['email','password']);
+    var user = new User(body);
+
+    user.save().then(()=>{
+        //chain promise
+        return user.generateAuthToken();
+        //res.send(user);
+    }).then((token)=>{
+        //header take to argumetns key value pairs
+        //x-auth create a custom header for example in our application I'm using jwt
+        res.header('x-auth', token).send(user.toJSON());
+
+    }).catch((e)=>res.status(400).send(e));
+   
+   
+    /**
+    User.create(user)
+    .then((user)=>{
+        res.send(user);
+    })
+    .catch((e)=>res.status(400).send())
+     */
+    
+    /**var user = new User({
+        email:req.body.email,
+        password:req.body.password
+    });
+
+    user.save().then((user)=>{
+        res.send(user);
+    }).catch((e)=> res.status(400).send())**/
+});
+
 app.listen(port,()=>{
     console.log(`Started up at port ${port}`);
 });
