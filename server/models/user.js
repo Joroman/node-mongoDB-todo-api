@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const _ = require ('lodash');
+const bcrypt = require('bcryptjs');
 
 /**
  * validate:{
@@ -78,12 +79,26 @@ UserSchema.statics.findByToken = function(token){
         '_id':decoded._id,
         'tokens.token':token,
         'tokens.access':'auth'
-        
     });
 }
+//this run code before given event and the event.
+//I specify on the first argument of the pre function in my case 'save' so before save the doc to the DB
+//use regular function because I have to acces to the this binding
+UserSchema.pre('save',function (next){
+    var user=this;
+    
+    if(user.isModified('password')){
+        bcrypt.genSalt(10,(err,salt)=>{
+            bcrypt.hash(user.password,salt,(err, hash)=>{
+                //I have to overwrite the user.password plaint text to the hashed password.
+                user.password=hash;
+                next();
+            });
+        });
+    }else{
+        next();
+    }
+});
 
 var User = mongoose.model('User',UserSchema);
-
-
-
 module.exports ={User};
