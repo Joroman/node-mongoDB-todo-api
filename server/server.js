@@ -6,10 +6,12 @@ const _ = require('lodash');
 const {ObjectID} = require('mongodb');
 const express = require('express');
 const bodyParser= require('body-parser');
+
 //local libraries
 var {mongoose} = require('./db/mongoose');
 var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
+var {authenticate} = require('./middleware/authenticate');
 
 var app = express() ;
 const port = process.env.PORT || 3000;
@@ -99,27 +101,14 @@ app.post('/users',(req, res)=>{
     }).then((token)=>{
         //header take to argumetns key value pairs
         //x-auth create a custom header for example in our application I'm using jwt
-        res.header('x-auth', token).send(user.toJSON());
+        res.header('x-auth', token).send(user);
 
-    }).catch((e)=>res.status(400).send(e));
-   
-   
-    /**
-    User.create(user)
-    .then((user)=>{
-        res.send(user);
-    })
-    .catch((e)=>res.status(400).send())
-     */
-    
-    /**var user = new User({
-        email:req.body.email,
-        password:req.body.password
-    });
+    }).catch((e)=>res.status(400).send(e));   
+});
 
-    user.save().then((user)=>{
-        res.send(user);
-    }).catch((e)=> res.status(400).send())**/
+//to add the middleware it only have to reference the function as a second argumetn of the route
+app.get('/users/me',authenticate,(req, res)=>{
+   res.send(req.user);
 });
 
 app.listen(port,()=>{
