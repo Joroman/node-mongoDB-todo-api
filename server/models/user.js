@@ -61,6 +61,20 @@ UserSchema.methods.generateAuthToken = function(){
         return token
     });
 }
+
+UserSchema.methods.removeToken= function(token){
+    var user= this;
+
+    return user.update({
+        $pull:{
+            tokens:{
+                token:token
+            }
+        }
+    });
+}
+
+
 //DEFINE MODEL METHODS INTO STATICS OBJECT
 UserSchema.statics.findByToken = function(token){
     //model to call model methods
@@ -81,6 +95,7 @@ UserSchema.statics.findByToken = function(token){
         'tokens.access':'auth'
     });
 }
+
 
 //Define model method to find the user by credentials
 UserSchema.statics.findByCredentials = function(email, password){
