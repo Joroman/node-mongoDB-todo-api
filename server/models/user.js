@@ -81,6 +81,30 @@ UserSchema.statics.findByToken = function(token){
         'tokens.access':'auth'
     });
 }
+
+//Define model method to find the user by credentials
+UserSchema.statics.findByCredentials = function(email, password){
+    var User= this;
+    
+    return User.findOne({email:email}).then((user)=>{
+        if(!user) return Promise.reject();
+
+        return new Promise((resolve, reject)=>{
+            bcrypt.compare(password, user.password,(err, result)=>{
+                if(err) reject();
+                
+                if(result){
+                    resolve (user);
+                }else{
+                    reject();
+                }
+            });
+        }); 
+    });
+}
+
+
+
 //this run code before given event and the event.
 //I specify on the first argument of the pre function in my case 'save' so before save the doc to the DB
 //use regular function because I have to acces to the this binding
